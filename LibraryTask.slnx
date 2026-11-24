@@ -1,0 +1,6 @@
+<Solution>
+  <Folder Name="/SqlScripts/">
+    <File Path="CreateScripts.sql" />
+  </Folder>
+  <Project Path="LibraryTask.csproj" />
+</Solution>
