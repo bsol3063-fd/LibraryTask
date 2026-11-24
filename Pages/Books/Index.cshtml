@@ -1,0 +1,228 @@
+﻿@page
+@model HomeLibrary.Pages.Books.IndexModel
+@{
+    ViewData["Title"] = "Домашняя библиотека";
+    ViewData["ContainerClass"] = "container-fluid";
+}
+
+<h1>Домашняя библиотека</h1>
+
+<form method="get" class="row g-2 mb-3">
+    <div class="col-auto flex-grow-1">
+        <input type="text" name="SearchTerm" value="@Model.SearchTerm"
+               class="form-control"
+               placeholder="Поиск по названию, автору или оглавлению..." />
+    </div>
+    <div class="col-auto">
+        <button type="submit" class="btn btn-primary">Найти</button>
+        @if (!string.IsNullOrEmpty(Model.SearchTerm))
+        {
+            <a asp-page="Index" class="btn btn-outline-secondary">Сбросить</a>
+        }
+    </div>
+</form>
+
+<p>
+    <button type="button" class="btn btn-success js-open-modal"
+            data-url="@Url.Page("Create")"
+            data-title="Добавить книгу">
+        Добавить книгу
+    </button>
+</p>
+
+@if (Model.Books.Count == 0)
+{
+    <div class="alert alert-info">Книги не найдены.</div>
+}
+else
+{
+    <table class="table table-striped table-hover">
+        <thead>
+            <tr>
+                <th>Название</th>
+                <th style="width: 25%;">Автор</th>
+                <th style="width: 150px">Жанр</th>
+                <th style="width: 100px;">Год</th>
+                <th style="width: 260px;">Действия</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var book in Model.Books)
+            {
+                <tr>
+                    <td>@book.Title</td>
+                    <td>@book.Author</td>
+                    <td>@book.Genre</td>
+                    <td>@book.PublicationYear</td>
+                    <td>
+                        <button type="button" class="btn btn-sm btn-outline-info js-open-modal"
+                                data-url="@Url.Page("Details", new { id = book.Id })"
+                                data-title="Просмотр: @book.Title">
+                            Просмотр
+                        </button>
+                        <button type="button" class="btn btn-sm btn-outline-primary js-open-modal"
+                                data-url="@Url.Page("Edit", new { id = book.Id })"
+                                data-title="Редактирование: @book.Title">
+                            Изменить
+                        </button>
+                        <a asp-page="Delete" asp-route-id="@book.Id" class="btn btn-sm btn-outline-danger">Удалить</a>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+<div class="modal fade" id="pageModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="pageModalTitle">Загрузка...</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Закрыть"></button>
+            </div>
+            <div class="modal-body" id="pageModalBody"></div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <link href="https://cdn.jsdelivr.net/npm/quill@2.0.2/dist/quill.snow.css" rel="stylesheet" />
+    <script src="https://cdn.jsdelivr.net/npm/quill@2.0.2/dist/quill.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const modalEl = document.getElementById('pageModal');
+            const modal = new bootstrap.Modal(modalEl);
+            const modalBody = document.getElementById('pageModalBody');
+            const modalTitle = document.getElementById('pageModalTitle');
+
+            window.initQuillEditor = function() {
+                const editorEl = document.getElementById('quill-editor');
+                const hidden = document.getElementById('ContentsEditor');
+                if (!editorEl || !hidden) return;
+                if (editorEl.classList.contains('ql-container')) return;
+
+                const quill = new Quill('#quill-editor', {
+                    theme: 'snow',
+                    modules: {
+                        toolbar: [
+                            ['bold', 'italic', 'underline'],
+                            [{ 'list': 'ordered' }, { 'list': 'bullet' }],
+                            ['link'],
+                            ['clean']
+                        ]
+                    }
+                });
+
+                if (hidden.value) {
+                    quill.root.innerHTML = hidden.value;
+                }
+
+                const form = document.getElementById('editBookForm');
+                if (form) {
+                    form.addEventListener('submit', function() {
+                        hidden.value = quill.root.innerHTML;
+                    });
+                }
+            };
+
+            // Инициализация Quill для формы Create
+            window.initCreateQuillEditor = function() {
+                const editorEl = document.getElementById('create-quill-editor');
+                const hidden = document.getElementById('CreateContentsEditor');
+                if (!editorEl || !hidden) return;
+                if (editorEl.classList.contains('ql-container')) return;
+
+                const quill = new Quill('#create-quill-editor', {
+                    theme: 'snow',
+                    modules: {
+                        toolbar: [
+                            ['bold', 'italic', 'underline'],
+                            [{ 'list': 'ordered' }, { 'list': 'bullet' }],
+                            ['link'],
+                            ['clean']
+                        ]
+                    }
+                });
+
+                const form = document.getElementById('createBookForm');
+                if (form) {
+                    form.addEventListener('submit', function() {
+                        hidden.value = quill.root.innerHTML;
+                    });
+                }
+            };
+
+            // Открытие модалки
+            document.addEventListener('click', async function(e) {
+                const btn = e.target.closest('.js-open-modal');
+                if (!btn) return;
+
+                const url = btn.dataset.url;
+                const title = btn.dataset.title || 'Загрузка...';
+
+                modalTitle.textContent = title;
+                modalBody.innerHTML = `<div class="text-center p-4"><div class="spinner-border"></div></div>`;
+                modal.show();
+
+                try {
+                    const response = await fetch(url, {
+                        headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                    });
+
+                    if (!response.ok) {
+                        modalBody.innerHTML = `<div class="alert alert-danger">Ошибка загрузки: ${response.status}</div>`;
+                        return;
+                    }
+
+                    modalBody.innerHTML = await response.text();
+
+                    if (window.initCreateQuillEditor) window.initCreateQuillEditor();
+                    if (window.initQuillEditor) window.initQuillEditor();
+
+                    const newForm = modalBody.querySelector('form');
+                    if (newForm) {
+                        newForm.addEventListener('submit', handleModalFormSubmit);
+                    }
+                } catch (err) {
+                    modalBody.innerHTML = `<div class="alert alert-danger">Ошибка: ${err.message}</div>`;
+                }
+            });
+
+            // AJAX-отправка формы Edit
+            async function handleModalFormSubmit(e) {
+                e.preventDefault();
+                const form = e.target;
+                const formData = new FormData(form);
+
+                try {
+                    const response = await fetch(form.action, {
+                        method: 'POST',
+                        body: formData,
+                        headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                    });
+
+                    const text = await response.text();
+
+                    // Если ответ — JSON, значит сохранение успешно
+                    if (text.trim().startsWith('{')) {
+                        const data = JSON.parse(text);
+                        if (data.success) {
+                            modal.hide();
+                            window.location.reload();
+                            return;
+                        }
+                    }
+
+                    // Иначе с ошибками валидации
+                    modalBody.innerHTML = text;
+                    if (window.initCreateQuillEditor) window.initCreateQuillEditor();
+                    if (window.initQuillEditor) window.initQuillEditor();
+                    const newForm = modalBody.querySelector('form');
+                    if (newForm) newForm.addEventListener('submit', handleModalFormSubmit);
+                } catch (err) {
+                    alert('Ошибка сохранения: ' + err.message);
+                }
+            }
+        });
+    </script>
+}

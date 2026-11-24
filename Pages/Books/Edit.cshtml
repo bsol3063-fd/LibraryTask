@@ -1,0 +1,13 @@
+﻿@page
+@model HomeLibrary.Pages.Books.EditModel
+@{
+    ViewData["Title"] = "Редактировать книгу";
+}
+
+<partial name="EditModal" model="Model" />
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <link href="https://cdn.jsdelivr.net/npm/quill@2.0.2/dist/quill.snow.css" rel="stylesheet" />
+    <script src="https://cdn.jsdelivr.net/npm/quill@2.0.2/dist/quill.js"></script>
+}

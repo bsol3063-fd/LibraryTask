@@ -1,0 +1,38 @@
+﻿@model HomeLibrary.Pages.Books.DetailsModel
+
+<h1>@Model.Book.Title</h1>
+
+<dl class="row">
+    <dt class="col-sm-3">Автор</dt>
+    <dd class="col-sm-9">@Model.Book.Author</dd>
+
+    <dt class="col-sm-3">Год издания</dt>
+    <dd class="col-sm-9">@Model.Book.PublicationYear</dd>
+
+    <dt class="col-sm-3">Жанр</dt>
+    <dd class="col-sm-9">@Model.Book.Genre</dd>
+
+    <dt class="col-sm-3">Дата добавления</dt>
+    <dd class="col-sm-9">@Model.Book.AddedDate.ToString("dd.MM.yyyy HH:mm")</dd>
+</dl>
+
+<h4>Оглавление</h4>
+@if (string.IsNullOrWhiteSpace(Model.Book.Contents))
+{
+    <p class="text-muted">Оглавление не заполнено.</p>
+}
+else
+{
+    <div class="border rounded p-3 bg-light">
+        @Html.Raw(Model.Book.Contents)
+    </div>
+}
+
+<div class="d-flex justify-content-end mt-3 gap-2">
+    <button type="button" class="btn btn-success js-open-modal"
+            data-url="@Url.Page("Edit", new { id = Model.Book.Id })"
+            data-title="Редактирование: @Model.Book.Title">
+        Редактировать
+    </button>
+    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+</div>

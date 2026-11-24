@@ -1,0 +1,43 @@
+﻿@model HomeLibrary.Pages.Books.EditModel
+
+<form method="post" asp-page="Edit" id="editBookForm">
+    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+    <input type="hidden" asp-for="Book.Id" />
+
+    <div class="mb-3">
+        <label asp-for="Book.Title" class="form-label"></label>
+        <input asp-for="Book.Title" class="form-control" />
+        <span asp-validation-for="Book.Title" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="Book.Author" class="form-label"></label>
+        <input asp-for="Book.Author" class="form-control" />
+        <span asp-validation-for="Book.Author" class="text-danger"></span>
+    </div>
+    
+    <div class="mb-3">
+        <label asp-for="Book.Genre" class="form-label"></label>
+        <input asp-for="Book.Genre" class="form-control" />
+        <span asp-validation-for="Book.Genre" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="Book.PublicationYear" class="form-label"></label>
+        <input asp-for="Book.PublicationYear" class="form-control" type="number" />
+        <span asp-validation-for="Book.PublicationYear" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="Book.Contents" class="form-label"></label>
+        <div id="quill-editor" class="quill-compact"></div>
+        <textarea asp-for="Book.Contents" id="ContentsEditor" style="display:none;"></textarea>
+        <span asp-validation-for="Book.Contents" class="text-danger"></span>
+    </div>
+
+    <div class="d-flex justify-content-end gap-2">
+        <button type="submit" class="btn btn-success">Сохранить</button>
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+    </div>
+</form>
